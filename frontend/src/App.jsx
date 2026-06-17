@@ -1,4 +1,7 @@
 import React, { useEffect } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import getTheme from './theme/theme.js';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, CircularProgress } from '@mui/material';
@@ -74,30 +77,49 @@ const HomeRedirect = () => {
 export const App = () => {
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.auth);
+  const { mode } = useSelector((state) => state.theme);
 
   useEffect(() => {
     dispatch(checkAuthSession());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (mode === 'light') {
+      document.body.classList.add('light-mode');
+      document.body.classList.remove('dark-mode');
+    } else {
+      document.body.classList.add('dark-mode');
+      document.body.classList.remove('light-mode');
+    }
+  }, [mode]);
+
+  const currentTheme = getTheme(mode);
+
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          backgroundColor: '#0f172a'
-        }}
-      >
-        <CircularProgress color="primary" size={50} />
-      </Box>
+      <ThemeProvider theme={currentTheme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            backgroundColor: mode === 'dark' ? '#0f172a' : '#f8fafc',
+            transition: 'background-color 0.4s'
+          }}
+        >
+          <CircularProgress color="primary" size={50} />
+        </Box>
+      </ThemeProvider>
     );
   }
 
   return (
-    <BrowserRouter>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <ThemeProvider theme={currentTheme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Navbar />
         <Box sx={{ display: 'flex', flexGrow: 1, minHeight: 'calc(100vh - 64px)' }}>
           <Sidebar />
@@ -330,6 +352,7 @@ export const App = () => {
         </Box>
       </Box>
     </BrowserRouter>
+  </ThemeProvider>
   );
 };
 
