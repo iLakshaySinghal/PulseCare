@@ -9,6 +9,7 @@ import aiReducer from '../features/ai/aiSlice.js';
 import billingReducer from '../features/billing/billingSlice.js';
 import inpatientReducer from '../features/inpatient/inpatientSlice.js';
 import analyticsReducer from '../features/analytics/analyticsSlice.js';
+import themeReducer from '../features/theme/themeSlice.js';
 
 export const store = configureStore({
   reducer: {
@@ -21,7 +22,8 @@ export const store = configureStore({
     ai: aiReducer,
     billing: billingReducer,
     inpatient: inpatientReducer,
-    analytics: analyticsReducer
+    analytics: analyticsReducer,
+    theme: themeReducer
   }
 });
 
