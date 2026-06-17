@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; color: #333; }
+    .container { padding: 20px; border: 1px solid #ddd; max-width: 600px; }
+    .header { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #28a745; }
+    .footer { margin-top: 20px; font-size: 12px; color: #777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">New Medical Report Released</div>
+    <p>Dear {{patientName}},</p>
+    <p>A new clinical entry or medical attachment has been added to your Electronic Medical Record (EMR) by <strong>{{providerName}}</strong>.</p>
+    <p>Details of the encounter:</p>
+    <ul>
+      <li><strong>Encounter Date:</strong> {{encounterDate}}</li>
+      <li><strong>Facility/Provider:</strong> {{providerName}}</li>
+    </ul>
+    <p>Please log in to your secure HMS Patient Portal to review your vitals, notes, and secure files.</p>
+    <div class="footer">This is a secure automated notification in compliance with HIPAA guidelines. Do not reply to this email.</div>
+  </div>
+</body>
+</html>

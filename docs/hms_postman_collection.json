@@ -1,0 +1,231 @@
+{
+  "info": {
+    "_postman_id": "7c6d9524-62c7-4d27-8a9c-d263f1ad4e6a",
+    "name": "Pulsecare Member 1 API",
+    "description": "Hospital Management System - Member 1 core backend API requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@hms.com\",\n  \"password\": \"Doctor123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Register Patient (Self)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testpatient@hms.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"gender\": \"Female\",\n  \"contactNumber\": \"+15551234567\",\n  \"emergencyContact\": {\n    \"name\": \"John Doe\",\n    \"relation\": \"Spouse\",\n    \"phone\": \"+15557654321\"\n  },\n  \"bloodGroup\": \"O+\",\n  \"allergies\": [\"Dust\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register-patient",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register-patient"]
+            }
+          }
+        },
+        {
+          "name": "Register Staff (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newdoctor@hms.com\",\n  \"password\": \"TempPass123!\",\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Jones\",\n  \"role\": \"Doctor\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register-staff",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register-staff"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "Intake New Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Bob\",\n  \"lastName\": \"Ross\",\n  \"dateOfBirth\": \"1965-03-22\",\n  \"gender\": \"Male\",\n  \"contactNumber\": \"+15552345678\",\n  \"emergencyContact\": {\n    \"name\": \"Alice Ross\",\n    \"relation\": \"Spouse\",\n    \"phone\": \"+15552345679\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/patients",
+              "host": ["{{base_url}}"],
+              "path": ["patients"]
+            }
+          }
+        },
+        {
+          "name": "List Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/patients?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["patients"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EMR",
+      "item": [
+        {
+          "name": "Create EMR Chart Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"{{patient_oid}}\",\n  \"clinicalNotes\": \"Patient presented with cough and congestion. Clear lungs.\",\n  \"vitals\": {\n    \"bloodPressure\": \"118/78\",\n    \"heartRate\": 68,\n    \"temperature\": 98.4\n  },\n  \"diagnoses\": [\n    {\n      \"code\": \"J00\",\n      \"name\": \"Acute nasopharyngitis [common cold]\",\n      \"status\": \"Active\"\n    }\n  ],\n  \"prescriptions\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/emr",
+              "host": ["{{base_url}}"],
+              "path": ["emr"]
+            }
+          }
+        },
+        {
+          "name": "Get Patient Timeline EMR",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/emr/patient/{{patient_oid}}",
+              "host": ["{{base_url}}"],
+              "path": ["emr", "patient", "{{patient_oid}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit & Notifications",
+      "item": [
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/audit-logs?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["audit-logs"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": { "type": "text/javascript", "exec": [""] }
+    },
+    {
+      "listen": "test",
+      "script": { "type": "text/javascript", "exec": [""] }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000/api/v1" },
+    { "key": "access_token", "value": "" },
+    { "key": "patient_oid", "value": "" }
+  ]
+}
