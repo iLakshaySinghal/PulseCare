@@ -189,7 +189,9 @@ export const AppointmentDashboard = () => {
           }}
         >
           <Tab label="Appointments Ledger" icon={<CalendarMonth />} iconPosition="start" />
-          <Tab label="Shift Configurations" icon={<Schedule />} iconPosition="start" />
+          {user && user.role !== 'Patient' && (
+            <Tab label="Shift Configurations" icon={<Schedule />} iconPosition="start" />
+          )}
         </Tabs>
 
         {tabValue === 0 && (
@@ -317,7 +319,7 @@ export const AppointmentDashboard = () => {
           </Box>
         )}
 
-        {tabValue === 1 && (
+        {tabValue === 1 && user && user.role !== 'Patient' && (
           <Box sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 3 }}>Setup Availability Schedule</Typography>
             <Grid container spacing={3}>

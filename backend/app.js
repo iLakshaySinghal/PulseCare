@@ -40,7 +40,7 @@ app.use(cors({
 // 2. Global Rate Limiting (100 requests per 15 minutes per IP)
 const globalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === 'production' ? 100 : 10000,
   message: {
     success: false,
     error: {
