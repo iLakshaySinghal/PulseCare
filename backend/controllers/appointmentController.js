@@ -1,6 +1,7 @@
 import appointmentService from '../services/appointmentService.js';
 import Appointment from '../models/Appointment.js';
 import DoctorAvailability from '../models/DoctorAvailability.js';
+import User from '../models/User.js';
 import { NotFoundError } from '../utils/appError.js';
 
 export const createAppointment = async (req, res, next) => {
@@ -135,10 +136,38 @@ export const listAppointments = async (req, res, next) => {
   }
 };
 
+export const getDoctorsList = async (req, res, next) => {
+  try {
+    const doctors = await User.find({ role: 'Doctor', isActive: true }, 'firstName lastName email');
+    res.status(200).json({
+      success: true,
+      message: 'Doctors list retrieved successfully',
+      data: doctors
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getNursesList = async (req, res, next) => {
+  try {
+    const nurses = await User.find({ role: 'Nurse', isActive: true }, 'firstName lastName email');
+    res.status(200).json({
+      success: true,
+      message: 'Nurses list retrieved successfully',
+      data: nurses
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createAppointment,
   updateAppointmentStatus,
   setAvailability,
   getDoctorAvailability,
-  listAppointments
+  listAppointments,
+  getDoctorsList,
+  getNursesList
 };

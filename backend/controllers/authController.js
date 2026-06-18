@@ -218,7 +218,14 @@ export const refresh = async (req, res, next) => {
  * POST /api/v1/auth/register-staff
  */
 export const registerStaff = async (req, res, next) => {
-  const { email, password, firstName, lastName, role } = req.body;
+  let { email, password, firstName, lastName, role } = req.body;
+
+  if (role === 'Doctor') {
+    const cleanFirstName = firstName.trim().toLowerCase().replace(/\s+/g, '');
+    const cleanLastName = lastName.trim().toLowerCase().replace(/\s+/g, '');
+    email = `${cleanFirstName}.${cleanLastName}@dr.pulsecare.com`;
+    password = `${cleanFirstName}1234`;
+  }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -267,9 +274,14 @@ export const registerStaff = async (req, res, next) => {
     logger.error(`Welcome email dispatch failed for ${email}: ${err.message}`);
   }
 
+  let successMessage = 'Staff account registered successfully';
+  if (role === 'Doctor') {
+    successMessage = `Doctor registered successfully. Email: ${email}, Password: ${password}`;
+  }
+
   res.status(201).json({
     success: true,
-    message: 'Staff account registered successfully',
+    message: successMessage,
     data: {
       id: newStaff._id,
       email: newStaff.email,

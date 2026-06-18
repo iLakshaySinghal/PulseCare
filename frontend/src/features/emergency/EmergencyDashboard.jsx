@@ -49,16 +49,15 @@ export const EmergencyDashboard = () => {
     // Load patients and staff list
     axiosInstance.get('/patients').then((res) => {
       setPatientsList(res.data.data.patients || []);
-    });
+    }).catch((err) => console.error(err));
 
-    // Fallback Mock Staff list
-    setDoctorsList([
-      { _id: '60aabc223a54890015f12700', firstName: 'John', lastName: 'Smith' },
-      { _id: '60aabc223a54890015f12701', firstName: 'Sarah', lastName: 'Connor' }
-    ]);
-    setNursesList([
-      { _id: '60aabc223a54890015f12702', firstName: 'Clara', lastName: 'Oswald' }
-    ]);
+    axiosInstance.get('/appointments/doctors').then((res) => {
+      setDoctorsList(res.data.data || []);
+    }).catch((err) => console.error(err));
+
+    axiosInstance.get('/appointments/nurses').then((res) => {
+      setNursesList(res.data.data || []);
+    }).catch((err) => console.error(err));
 
     const socket = getSocket();
     if (socket) {
