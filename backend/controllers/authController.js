@@ -220,10 +220,21 @@ export const refresh = async (req, res, next) => {
 export const registerStaff = async (req, res, next) => {
   let { email, password, firstName, lastName, role } = req.body;
 
-  if (role === 'Doctor') {
+  const autoGenRoles = {
+    'Doctor': 'dr',
+    'Nurse': 'nr',
+    'Receptionist': 'rc',
+    'Lab Technician': 'lt',
+    'Pharmacist': 'ph',
+    'Billing Executive': 'bl'
+  };
+
+  const isAutoGen = role in autoGenRoles;
+  if (isAutoGen) {
     const cleanFirstName = firstName.trim().toLowerCase().replace(/\s+/g, '');
     const cleanLastName = lastName.trim().toLowerCase().replace(/\s+/g, '');
-    email = `${cleanFirstName}.${cleanLastName}@dr.pulsecare.com`;
+    const domainSuffix = autoGenRoles[role];
+    email = `${cleanFirstName}.${cleanLastName}@${domainSuffix}.pulsecare.com`;
     password = `${cleanFirstName}1234`;
   }
 
@@ -275,8 +286,8 @@ export const registerStaff = async (req, res, next) => {
   }
 
   let successMessage = 'Staff account registered successfully';
-  if (role === 'Doctor') {
-    successMessage = `Doctor registered successfully. Email: ${email}, Password: ${password}`;
+  if (isAutoGen) {
+    successMessage = `${role} registered successfully. Email: ${email}, Password: ${password}`;
   }
 
   res.status(201).json({

@@ -3,6 +3,15 @@ import { Box, Typography, Grid, Card, CardContent, TextField, MenuItem, Button, 
 import { Shield, PersonAdd, ListAlt } from '@mui/icons-material';
 import axiosInstance from '../../utils/axiosInstance.js';
 
+const autoGenRoles = {
+  'Doctor': 'dr',
+  'Nurse': 'nr',
+  'Receptionist': 'rc',
+  'Lab Technician': 'lt',
+  'Pharmacist': 'ph',
+  'Billing Executive': 'bl'
+};
+
 export const AdminDashboard = () => {
   // Staff registration form state
   const [staffData, setStaffData] = useState({
@@ -35,7 +44,7 @@ export const AdminDashboard = () => {
 
     try {
       const payload = { ...staffData };
-      if (payload.role === 'Doctor') {
+      if (payload.role in autoGenRoles) {
         delete payload.email;
         delete payload.password;
       }
@@ -147,13 +156,13 @@ export const AdminDashboard = () => {
                     </Grid>
                   </Grid>
 
-                  {staffData.role === 'Doctor' ? (
+                  {staffData.role in autoGenRoles ? (
                     <Alert severity="info" sx={{ borderRadius: 2 }}>
-                      Doctor login credentials will be automatically generated:
+                      {staffData.role} login credentials will be automatically generated:
                       <br />
-                      • Email: <strong>firstname.lastname@dr.pulsecare.com</strong>
+                      • Email: <strong>{`${(staffData.firstName || 'firstname').trim().toLowerCase().replace(/\s+/g, '')}.${(staffData.lastName || 'lastname').trim().toLowerCase().replace(/\s+/g, '')}@${autoGenRoles[staffData.role]}.pulsecare.com`}</strong>
                       <br />
-                      • Password: <strong>firstname1234</strong>
+                      • Password: <strong>{`${(staffData.firstName || 'firstname').trim().toLowerCase().replace(/\s+/g, '')}1234`}</strong>
                     </Alert>
                   ) : (
                     <>
