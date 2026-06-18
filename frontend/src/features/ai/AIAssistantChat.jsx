@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Typography, Card, CardContent, TextField, Button, Grid, Avatar, Paper, List, ListItem, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, TextField, Button, Grid, Avatar, Paper, List, ListItem, CircularProgress, Divider } from '@mui/material';
 import { SmartToy, Person, Send, CalendarToday } from '@mui/icons-material';
 import { assistAppointment } from './aiSlice.js';
 

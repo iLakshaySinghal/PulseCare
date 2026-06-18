@@ -129,6 +129,19 @@ const appointmentSlice = createSlice({
       // Availability
       .addCase(fetchDoctorAvailability.fulfilled, (state, action) => {
         state.doctorAvailability = action.payload;
+      })
+      .addCase(saveDoctorAvailability.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(saveDoctorAvailability.fulfilled, (state) => {
+        state.loading = false;
+        state.success = true;
+      })
+      .addCase(saveDoctorAvailability.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   }
 });

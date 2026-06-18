@@ -25,7 +25,7 @@ router.post(
 
 router.get(
   '/',
-  authorizeRoles('Hospital Admin', 'Receptionist', 'Doctor', 'Nurse'),
+  authorizeRoles('Hospital Admin', 'Receptionist', 'Doctor', 'Nurse', 'Patient'),
   asyncHandler(listPatients)
 );
 

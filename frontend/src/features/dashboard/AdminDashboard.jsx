@@ -34,7 +34,12 @@ export const AdminDashboard = () => {
     setRegisterSuccess('');
 
     try {
-      const response = await axiosInstance.post('/auth/register-staff', staffData);
+      const payload = { ...staffData };
+      if (payload.role === 'Doctor') {
+        delete payload.email;
+        delete payload.password;
+      }
+      const response = await axiosInstance.post('/auth/register-staff', payload);
       setRegisterSuccess(response.data.message);
       setStaffData({ email: '', password: '', firstName: '', lastName: '', role: 'Doctor' });
       fetchAuditLogs();
@@ -99,53 +104,6 @@ export const AdminDashboard = () => {
               <form onSubmit={handleRegisterStaff}>
                 <Box display="flex" flexDirection="column" gap={2.5}>
                   <TextField
-                    name="email"
-                    label="Staff Email"
-                    type="email"
-                    fullWidth
-                    required
-                    value={staffData.email}
-                    onChange={handleStaffChange}
-                    disabled={registerLoading}
-                  />
-
-                  <TextField
-                    name="password"
-                    label="Temporary Password"
-                    type="password"
-                    fullWidth
-                    required
-                    value={staffData.password}
-                    onChange={handleStaffChange}
-                    disabled={registerLoading}
-                  />
-
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <TextField
-                        name="firstName"
-                        label="First Name"
-                        fullWidth
-                        required
-                        value={formData => staffData.firstName}
-                        onChange={handleStaffChange}
-                        disabled={registerLoading}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField
-                        name="lastName"
-                        label="Last Name"
-                        fullWidth
-                        required
-                        value={staffData.lastName}
-                        onChange={handleStaffChange}
-                        disabled={registerLoading}
-                      />
-                    </Grid>
-                  </Grid>
-
-                  <TextField
                     name="role"
                     label="System Role"
                     select
@@ -163,6 +121,65 @@ export const AdminDashboard = () => {
                     <MenuItem value="Pharmacist">Pharmacist</MenuItem>
                     <MenuItem value="Billing Executive">Billing Executive</MenuItem>
                   </TextField>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <TextField
+                        name="firstName"
+                        label="First Name"
+                        fullWidth
+                        required
+                        value={staffData.firstName}
+                        onChange={handleStaffChange}
+                        disabled={registerLoading}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <TextField
+                        name="lastName"
+                        label="Last Name"
+                        fullWidth
+                        required
+                        value={staffData.lastName}
+                        onChange={handleStaffChange}
+                        disabled={registerLoading}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {staffData.role === 'Doctor' ? (
+                    <Alert severity="info" sx={{ borderRadius: 2 }}>
+                      Doctor login credentials will be automatically generated:
+                      <br />
+                      • Email: <strong>firstname.lastname@dr.pulsecare.com</strong>
+                      <br />
+                      • Password: <strong>firstname1234</strong>
+                    </Alert>
+                  ) : (
+                    <>
+                      <TextField
+                        name="email"
+                        label="Staff Email"
+                        type="email"
+                        fullWidth
+                        required
+                        value={staffData.email}
+                        onChange={handleStaffChange}
+                        disabled={registerLoading}
+                      />
+
+                      <TextField
+                        name="password"
+                        label="Temporary Password"
+                        type="password"
+                        fullWidth
+                        required
+                        value={staffData.password}
+                        onChange={handleStaffChange}
+                        disabled={registerLoading}
+                      />
+                    </>
+                  )}
 
                   <Button
                     type="submit"

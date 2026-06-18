@@ -4,7 +4,9 @@ import {
   updateAppointmentStatus,
   setAvailability,
   getDoctorAvailability,
-  listAppointments
+  listAppointments,
+  getDoctorsList,
+  getNursesList
 } from '../controllers/appointmentController.js';
 import { authenticateJWT } from '../middlewares/authenticateJWT.js';
 import { authorizeRoles } from '../middlewares/authorizeRoles.js';
@@ -19,6 +21,18 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 const router = express.Router();
 
 router.use(authenticateJWT);
+
+router.get(
+  '/doctors',
+  authorizeRoles('Patient', 'Receptionist', 'Doctor', 'Nurse', 'Hospital Admin', 'Super Admin'),
+  asyncHandler(getDoctorsList)
+);
+
+router.get(
+  '/nurses',
+  authorizeRoles('Patient', 'Receptionist', 'Doctor', 'Nurse', 'Hospital Admin', 'Super Admin'),
+  asyncHandler(getNursesList)
+);
 
 router.post(
   '/',

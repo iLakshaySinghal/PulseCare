@@ -26,7 +26,7 @@ const router = express.Router();
 // Rate limiting on sensitive login and password reset routes
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Max 10 requests per window
+  max: process.env.NODE_ENV === 'production' ? 10 : 10000, // Max 10 requests per window
   message: {
     success: false,
     error: {

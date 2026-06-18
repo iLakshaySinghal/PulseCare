@@ -4,14 +4,15 @@ import {
   Box, Typography, Grid, Paper, Tabs, Tab, Button, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Select, MenuItem, InputLabel,
   FormControl, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Chip, IconButton, Card, CardContent
+  TableRow, Chip, IconButton, Card, CardContent, Alert
 } from '@mui/material';
 import {
   CalendarMonth, Add, CheckCircle, Cancel, Edit, Schedule, Search, FilterList
 } from '@mui/icons-material';
 import {
   fetchAppointments, bookAppointment, updateAppointmentStatus,
-  fetchDoctorAvailability, saveDoctorAvailability, receiveSocketAppointmentUpdate
+  fetchDoctorAvailability, saveDoctorAvailability, receiveSocketAppointmentUpdate,
+  clearAppointmentState
 } from './appointmentSlice.js';
 import axiosInstance from '../../utils/axiosInstance.js';
 import { getSocket } from '../../utils/socket.js';
@@ -19,7 +20,7 @@ import { getSocket } from '../../utils/socket.js';
 export const AppointmentDashboard = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { appointments, doctorAvailability, loading } = useSelector((state) => state.appointments);
+  const { appointments, doctorAvailability, loading, error, success } = useSelector((state) => state.appointments);
 
   // States
   const [tabValue, setTabValue] = useState(0);
@@ -47,19 +48,18 @@ export const AppointmentDashboard = () => {
     // Load Doctors and Patients list for booking
     const loadBookingResources = async () => {
       try {
-        const docRes = await axiosInstance.get('/auth/register-staff'); // Fallback or mock list
-        // If not accessible directly, fetch users with Doctor role
-        const usersRes = await axiosInstance.get('/patients'); // retrieve patient options
+        const docRes = await axiosInstance.get('/appointments/doctors');
+        setDoctorsList(docRes.data.data || []);
+      } catch (err) {
+        console.error('Failed to fetch doctors:', err);
+        setDoctorsList([]);
+      }
+      try {
+        const usersRes = await axiosInstance.get('/patients');
         setPatientsList(usersRes.data.data.patients || []);
       } catch (err) {
-        // Fallback mock lists if user management API fails
-        setDoctorsList([
-          { _id: '60aabc223a54890015f12700', firstName: 'John', lastName: 'Smith' },
-          { _id: '60aabc223a54890015f12701', firstName: 'Sarah', lastName: 'Connor' }
-        ]);
-        setPatientsList([
-          { _id: '60aabd443a54890015f12705', firstName: 'Alice', lastName: 'Brown', patientId: 'PT-20260617-8891' }
-        ]);
+        console.error('Failed to fetch patients:', err);
+        setPatientsList([]);
       }
     };
     loadBookingResources();
@@ -76,6 +76,32 @@ export const AppointmentDashboard = () => {
     }
   }, [dispatch]);
 
+  // Reset success/error state on tab changes or opening/closing dialog
+  useEffect(() => {
+    dispatch(clearAppointmentState());
+  }, [tabValue, openBook, dispatch]);
+
+  // Load doctor's own availability configs if role is Doctor
+  useEffect(() => {
+    if (user && user.role === 'Doctor') {
+      const fetchOwnAvailability = async () => {
+        try {
+          const res = await axiosInstance.get(`/appointments/availability/${user.id}`);
+          const dayConfig = res.data.data.find(d => d.dayOfWeek === availDay);
+          if (dayConfig && dayConfig.slots && dayConfig.slots.length > 0) {
+            setAvailSlots(dayConfig.slots);
+          } else {
+            setAvailSlots([{ startTime: '09:00', endTime: '17:00' }]);
+          }
+        } catch (err) {
+          console.error('Failed to fetch own availability:', err);
+          setAvailSlots([{ startTime: '09:00', endTime: '17:00' }]);
+        }
+      };
+      fetchOwnAvailability();
+    }
+  }, [user, availDay]);
+
   // Handle slot retrieval
   useEffect(() => {
     if (selectedDoctor && selectedDate) {
@@ -83,7 +109,9 @@ export const AppointmentDashboard = () => {
       const fetchSlots = async () => {
         try {
           const res = await axiosInstance.get(`/appointments/availability/${selectedDoctor}`);
-          const dayName = new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' });
+          const dateObj = new Date(selectedDate);
+          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          const dayName = days[dateObj.getUTCDay()];
           const dayConfig = res.data.data.find(d => d.dayOfWeek === dayName);
           if (dayConfig) {
             setAvailableSlots(dayConfig.slots);
@@ -124,10 +152,16 @@ export const AppointmentDashboard = () => {
       appointmentDate: selectedDate,
       slot: { startTime: start, endTime: end },
       reason: bookingReason
-    })).then(() => {
-      setOpenBook(false);
-      dispatch(fetchAppointments());
-    });
+    })).unwrap()
+      .then(() => {
+        setOpenBook(false);
+        setBookingReason('');
+        setSelectedSlot('');
+        dispatch(fetchAppointments());
+      })
+      .catch((err) => {
+        console.error('Booking failed:', err);
+      });
   };
 
   const handleStatusChange = (id, newStatus) => {
@@ -189,7 +223,9 @@ export const AppointmentDashboard = () => {
           }}
         >
           <Tab label="Appointments Ledger" icon={<CalendarMonth />} iconPosition="start" />
-          <Tab label="Shift Configurations" icon={<Schedule />} iconPosition="start" />
+          {user && user.role !== 'Patient' && (
+            <Tab label="Shift Configurations" icon={<Schedule />} iconPosition="start" />
+          )}
         </Tabs>
 
         {tabValue === 0 && (
@@ -317,7 +353,7 @@ export const AppointmentDashboard = () => {
           </Box>
         )}
 
-        {tabValue === 1 && (
+        {tabValue === 1 && user && user.role !== 'Patient' && (
           <Box sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 3 }}>Setup Availability Schedule</Typography>
             <Grid container spacing={3}>
@@ -375,7 +411,7 @@ export const AppointmentDashboard = () => {
         <DialogTitle>Book Patient Appointment</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
-            {user.role !== 'Patient' && (
+            {user && user.role !== 'Patient' && (
               <FormControl fullWidth>
                 <InputLabel>Select Patient Profile</InputLabel>
                 <Select value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)} label="Select Patient Profile">

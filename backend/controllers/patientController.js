@@ -205,6 +205,9 @@ export const listPatients = async (req, res, next) => {
   const skip = (pageNum - 1) * limitNum;
 
   const filter = {};
+  if (req.user.role === 'Patient') {
+    filter.userId = req.user.id;
+  }
   if (search) {
     // Search by text index or prefix
     filter.$or = [

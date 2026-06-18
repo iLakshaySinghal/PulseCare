@@ -11,20 +11,6 @@ export const loginSchema = Joi.object({
 });
 
 export const registerStaffSchema = Joi.object({
-  email: Joi.string().trim().email().required().messages({
-    'string.email': 'Please provide a valid email address',
-    'any.required': 'Email is required'
-  }),
-  password: Joi.string().min(8).required().messages({
-    'string.min': 'Password must be at least 8 characters long',
-    'any.required': 'Password is required'
-  }),
-  firstName: Joi.string().trim().max(50).required().messages({
-    'any.required': 'First name is required'
-  }),
-  lastName: Joi.string().trim().max(50).required().messages({
-    'any.required': 'Last name is required'
-  }),
   role: Joi.string().valid(
     'Hospital Admin',
     'Doctor',
@@ -36,6 +22,28 @@ export const registerStaffSchema = Joi.object({
   ).required().messages({
     'any.only': 'Invalid staff role specified',
     'any.required': 'Role is required'
+  }),
+  email: Joi.string().trim().email().when('role', {
+    is: 'Doctor',
+    then: Joi.optional(),
+    otherwise: Joi.required()
+  }).messages({
+    'string.email': 'Please provide a valid email address',
+    'any.required': 'Email is required'
+  }),
+  password: Joi.string().min(8).when('role', {
+    is: 'Doctor',
+    then: Joi.optional(),
+    otherwise: Joi.required()
+  }).messages({
+    'string.min': 'Password must be at least 8 characters long',
+    'any.required': 'Password is required'
+  }),
+  firstName: Joi.string().trim().max(50).required().messages({
+    'any.required': 'First name is required'
+  }),
+  lastName: Joi.string().trim().max(50).required().messages({
+    'any.required': 'Last name is required'
   })
 });
 
