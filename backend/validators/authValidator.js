@@ -24,7 +24,7 @@ export const registerStaffSchema = Joi.object({
     'any.required': 'Role is required'
   }),
   email: Joi.string().trim().email().when('role', {
-    is: 'Doctor',
+    is: Joi.valid('Doctor', 'Nurse', 'Receptionist', 'Lab Technician', 'Pharmacist', 'Billing Executive'),
     then: Joi.optional(),
     otherwise: Joi.required()
   }).messages({
@@ -32,7 +32,7 @@ export const registerStaffSchema = Joi.object({
     'any.required': 'Email is required'
   }),
   password: Joi.string().min(8).when('role', {
-    is: 'Doctor',
+    is: Joi.valid('Doctor', 'Nurse', 'Receptionist', 'Lab Technician', 'Pharmacist', 'Billing Executive'),
     then: Joi.optional(),
     otherwise: Joi.required()
   }).messages({
