@@ -162,11 +162,11 @@ export const completeConsultation = async (consultationId, doctorId) => {
 
     // Broadcast for Pharmacists (new prescription queue alert)
     if (consultation.prescriptions && consultation.prescriptions.length > 0) {
-      io.to('role_Pharmacist').emit('new_prescription_available', {
-        emrId: newEmrRecord._id,
-        patientName: `${patient.firstName} ${patient.lastName}`,
-        prescriptions: consultation.prescriptions
-      });
+      await newEmrRecord.populate([
+        { path: 'patientId' },
+        { path: 'providerId', select: 'firstName lastName' }
+      ]);
+      io.to('role_Pharmacist').emit('new_prescription_available', newEmrRecord);
     }
   } catch (err) {
     logger.error(`Socket broadcast fail in completeConsultation: ${err.message}`);

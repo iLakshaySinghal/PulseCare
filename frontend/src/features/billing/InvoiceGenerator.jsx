@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, FormControlLabel, TextField, Alert, CircularProgress, MenuItem } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, FormControlLabel, TextField, Alert, CircularProgress, MenuItem, Chip, Divider } from '@mui/material';
 import { Receipt, Search, DoneAll, History } from '@mui/icons-material';
 import axiosInstance from '../../utils/axiosInstance.js';
 import { fetchUnbilledItems, generateInvoice } from './billingSlice.js';

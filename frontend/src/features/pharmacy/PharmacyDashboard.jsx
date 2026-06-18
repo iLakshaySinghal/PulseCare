@@ -4,7 +4,7 @@ import {
   Box, Typography, Grid, Paper, Tabs, Tab, Button, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Select, MenuItem, InputLabel,
   FormControl, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Chip, Card, CardContent
+  TableRow, Chip, Card, CardContent, Divider
 } from '@mui/material';
 import {
   LocalPharmacy, Add, CheckCircle, Warning, Search, ShoppingCart

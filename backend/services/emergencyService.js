@@ -40,6 +40,8 @@ export const registerEmergencyCase = async ({ patientId, anonymousPatientName, c
     status: 'Registered'
   });
 
+  await emergencyCase.populate('patientId', 'firstName lastName patientId contactNumber');
+
   // Log Audit
   await auditService.logAuditEvent({
     userId,
@@ -88,6 +90,11 @@ export const assignStaff = async (caseId, { assignedDoctorId, assignedNurseId },
   }
 
   await emergencyCase.save();
+  await emergencyCase.populate([
+    { path: 'patientId', select: 'firstName lastName patientId contactNumber' },
+    { path: 'assignedDoctorId', select: 'firstName lastName' },
+    { path: 'assignedNurseId', select: 'firstName lastName' }
+  ]);
 
   // Audit Log
   await auditService.logAuditEvent({
@@ -133,6 +140,11 @@ export const updateTreatment = async (caseId, { status, treatmentNotes }, userId
   }
 
   await emergencyCase.save();
+  await emergencyCase.populate([
+    { path: 'patientId', select: 'firstName lastName patientId contactNumber' },
+    { path: 'assignedDoctorId', select: 'firstName lastName' },
+    { path: 'assignedNurseId', select: 'firstName lastName' }
+  ]);
 
   // Audit Log
   await auditService.logAuditEvent({
