@@ -34,18 +34,18 @@ erDiagram
 
     User {
         ObjectId _id PK
-        string email UNIQUE
+        string email "UNIQUE"
         string passwordHash
         string firstName
         string lastName
-        string role ENUM
+        string role "ENUM"
         boolean isActive
     }
 
     RefreshToken {
         ObjectId _id PK
         ObjectId userId FK
-        string token UNIQUE
+        string token "UNIQUE"
         date expiresAt
         boolean isRevoked
         string replacedByToken
@@ -53,7 +53,7 @@ erDiagram
 
     Patient {
         ObjectId _id PK
-        string patientId UNIQUE
+        string patientId "UNIQUE"
         ObjectId userId FK
         string firstName
         string lastName
@@ -84,13 +84,13 @@ erDiagram
         date appointmentDate
         object slot
         string reason
-        string status ENUM
+        string status "ENUM"
     }
 
     DoctorAvailability {
         ObjectId _id PK
         ObjectId doctorId FK
-        string dayOfWeek ENUM
+        string dayOfWeek "ENUM"
         array slots
         array exceptions
     }
