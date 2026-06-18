@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardContent, Grid, Button, Paper, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Button, Paper, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Chip } from '@mui/material';
 import { BedroomChild, Add, SingleBed } from '@mui/icons-material';
 import axiosInstance from '../../utils/axiosInstance.js';
 import { getSocket } from '../../utils/socket.js';
