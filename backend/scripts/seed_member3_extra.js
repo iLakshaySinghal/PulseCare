@@ -8,6 +8,7 @@ import Consultation from '../models/Consultation.js';
 import LabRequest from '../models/LabRequest.js';
 import DispenseRecord from '../models/DispenseRecord.js';
 import Medicine from '../models/Medicine.js';
+import Inventory from '../models/Inventory.js';
 import Ward from '../models/Ward.js';
 import Room from '../models/Room.js';
 import Bed from '../models/Bed.js';
@@ -76,10 +77,12 @@ const seedExtra = async () => {
     });
     console.log('Created completed unbilled Lab Request.');
 
-    // 4. Mock Medicines & Dispense Record (Unbilled)
+    // 4. Mock Medicines, Inventory & Dispense Record (Unbilled)
     await Medicine.deleteMany({});
     await DispenseRecord.deleteMany({});
-    const med = await Medicine.create({
+    await Inventory.deleteMany({});
+
+    const med1 = await Medicine.create({
       name: 'Paracetamol 500mg',
       genericName: 'Acetaminophen',
       form: 'Tablet',
@@ -87,11 +90,60 @@ const seedExtra = async () => {
       manufacturer: 'Generic Labs'
     });
 
+    const med2 = await Medicine.create({
+      name: 'Amoxicillin 500mg',
+      genericName: 'Amoxicillin',
+      form: 'Capsule',
+      strength: '500mg',
+      manufacturer: 'BioPharma Inc'
+    });
+
+    const med3 = await Medicine.create({
+      name: 'Ibuprofen 400mg',
+      genericName: 'Ibuprofen',
+      form: 'Tablet',
+      strength: '400mg',
+      manufacturer: 'HealthMed Solutions'
+    });
+    console.log('Created Medicines catalog.');
+
+    // Seed Inventory batches
+    await Inventory.create({
+      medicineId: med1._id,
+      stock: 135,
+      expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      supplier: 'Global Pharma Distributors',
+      batchNumber: 'B-PC500-11',
+      unitPrice: 0.10,
+      reorderLevel: 20
+    });
+
+    await Inventory.create({
+      medicineId: med2._id,
+      stock: 80,
+      expiryDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 6 months
+      supplier: 'Astra Supplies',
+      batchNumber: 'B-AMX500-02',
+      unitPrice: 0.45,
+      reorderLevel: 15
+    });
+
+    await Inventory.create({
+      medicineId: med3._id,
+      stock: 8, // low stock
+      expiryDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // expired 5 days ago (triggers warning badge)
+      supplier: 'QuickMeds Wholesalers',
+      batchNumber: 'B-IBU400-09',
+      unitPrice: 0.25,
+      reorderLevel: 10
+    });
+    console.log('Created Inventory stock ledger entries.');
+
     const dispense = await DispenseRecord.create({
       emrId: new mongoose.Types.ObjectId(),
       patientId: patient._id,
       pharmacistId: doctor._id, // fallback pharmacist ref
-      dispensedMedicines: [{ medicineId: med._id, quantity: 15, batchNumber: 'B-PC500-11' }],
+      dispensedMedicines: [{ medicineId: med1._id, quantity: 15, batchNumber: 'B-PC500-11' }],
       status: 'Dispensed'
     });
     console.log('Created pharmacy Dispense Record.');

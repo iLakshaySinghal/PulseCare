@@ -73,11 +73,14 @@ const emergencySlice = createSlice({
     receiveSocketEmergencyUpdate: (state, action) => {
       const { emergencyCase, action: socketAction } = action.payload;
       if (socketAction === 'REGISTER') {
-        state.cases = [...state.cases, emergencyCase].sort((a, b) => {
-          // Sort Critical -> High -> Medium -> Low
-          const pMap = { Critical: 1, High: 2, Medium: 3, Low: 4 };
-          return pMap[a.priority] - pMap[b.priority];
-        });
+        const exists = state.cases.some((c) => c._id === emergencyCase._id);
+        if (!exists) {
+          state.cases = [...state.cases, emergencyCase].sort((a, b) => {
+            // Sort Critical -> High -> Medium -> Low
+            const pMap = { Critical: 1, High: 2, Medium: 3, Low: 4 };
+            return pMap[a.priority] - pMap[b.priority];
+          });
+        }
       } else {
         state.cases = state.cases
           .map((c) => (c._id === emergencyCase._id ? { ...c, ...emergencyCase } : c))
@@ -109,10 +112,13 @@ const emergencySlice = createSlice({
       .addCase(registerEmergencyCase.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        state.cases = [...state.cases, action.payload].sort((a, b) => {
-          const pMap = { Critical: 1, High: 2, Medium: 3, Low: 4 };
-          return pMap[a.priority] - pMap[b.priority];
-        });
+        const exists = state.cases.some((c) => c._id === action.payload._id);
+        if (!exists) {
+          state.cases = [...state.cases, action.payload].sort((a, b) => {
+            const pMap = { Critical: 1, High: 2, Medium: 3, Low: 4 };
+            return pMap[a.priority] - pMap[b.priority];
+          });
+        }
       })
       .addCase(registerEmergencyCase.rejected, (state, action) => {
         state.loading = false;

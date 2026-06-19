@@ -70,7 +70,7 @@ export const RevenueScreen = () => {
             <CardContent>
               <Typography color="text.secondary" variant="body2" gutterBottom>Aggregated Intake</Typography>
               <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
-                ${totalCollected.toLocaleString()}
+                ₹{totalCollected.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
@@ -104,7 +104,7 @@ export const RevenueScreen = () => {
                       <TableCell>
                         <Chip label={p.method} size="small" color="primary" variant="outlined" />
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: 'success.main' }}>+${p.amount}</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: 'success.main' }}>+₹{p.amount}</TableCell>
                     </TableRow>
                   ))}
                   {payments.length === 0 && (

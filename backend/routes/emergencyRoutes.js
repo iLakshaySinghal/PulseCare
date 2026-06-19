@@ -29,13 +29,13 @@ router.post(
 
 router.get(
   '/cases',
-  authorizeRoles('Doctor', 'Nurse', 'Hospital Admin', 'Super Admin'),
+  authorizeRoles('Doctor', 'Nurse', 'Hospital Admin', 'Super Admin', 'Receptionist'),
   asyncHandler(listEmergencyCases)
 );
 
 router.get(
   '/cases/:id',
-  authorizeRoles('Doctor', 'Nurse', 'Hospital Admin', 'Super Admin'),
+  authorizeRoles('Doctor', 'Nurse', 'Hospital Admin', 'Super Admin', 'Receptionist'),
   asyncHandler(getEmergencyCaseById)
 );
 

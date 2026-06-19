@@ -21,6 +21,10 @@ export const EmergencyDashboard = () => {
   const { cases, loading } = useSelector((state) => state.emergency);
   const { user } = useSelector((state) => state.auth);
 
+  const canRegister = ['Nurse', 'Receptionist', 'Hospital Admin', 'Super Admin'].includes(user?.role);
+  const canAssign = ['Nurse', 'Doctor', 'Hospital Admin', 'Super Admin'].includes(user?.role);
+  const canTreat = ['Doctor', 'Nurse'].includes(user?.role);
+
   const [openRegister, setOpenRegister] = useState(false);
   const [openAssign, setOpenAssign] = useState(false);
   const [openTreat, setOpenTreat] = useState(false);
@@ -124,18 +128,20 @@ export const EmergencyDashboard = () => {
             Real-time ER patient tracking and triage allocation system.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setOpenRegister(true)}
-          sx={{
-            background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
-            boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)',
-            borderRadius: 2
-          }}
-        >
-          ER Registration
-        </Button>
+        {canRegister && (
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setOpenRegister(true)}
+            sx={{
+              background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
+              boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)',
+              borderRadius: 2
+            }}
+          >
+            ER Registration
+          </Button>
+        )}
       </Box>
 
       {/* Triage Priority Summary Cards */}
@@ -222,23 +228,32 @@ export const EmergencyDashboard = () => {
                   </TableCell>
                   <TableCell align="right">
                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<Assignment />}
-                        onClick={() => { setSelectedCase(c); setOpenAssign(true); }}
-                      >
-                        Assign Team
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        color="secondary"
-                        startIcon={<MedicalServices />}
-                        onClick={() => { setSelectedCase(c); setOpenTreat(true); }}
-                      >
-                        Treat / Status
-                      </Button>
+                      {canAssign && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<Assignment />}
+                          onClick={() => { setSelectedCase(c); setOpenAssign(true); }}
+                        >
+                          Assign Team
+                        </Button>
+                      )}
+                      {canTreat && (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="secondary"
+                          startIcon={<MedicalServices />}
+                          onClick={() => { setSelectedCase(c); setOpenTreat(true); }}
+                        >
+                          Treat / Status
+                        </Button>
+                      )}
+                      {!canAssign && !canTreat && (
+                        <Typography variant="caption" color="text.secondary">
+                          No actions available
+                        </Typography>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>

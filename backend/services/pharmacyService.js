@@ -29,6 +29,17 @@ export const addStock = async (stockData, userId) => {
     throw new NotFoundError('Medicine not found in catalog');
   }
 
+  // Check if batch number already exists for this medicine
+  const existingBatch = await Inventory.findOne({
+    medicineId: stockData.medicineId,
+    batchNumber: stockData.batchNumber
+  });
+  if (existingBatch) {
+    throw new ConflictError(
+      `A stock batch with number '${stockData.batchNumber}' already exists for this medicine.`
+    );
+  }
+
   const inventory = await Inventory.create(stockData);
 
   // Log Audit
@@ -139,9 +150,66 @@ export const dispensePrescription = async ({ emrId, dispensedMedicines, pharmaci
   return dispenseRecord;
 };
 
+/**
+ * Deletes an inventory stock batch by ID
+ */
+export const deleteInventory = async (inventoryId, userId) => {
+  const inventory = await Inventory.findById(inventoryId);
+  if (!inventory) {
+    throw new NotFoundError('Inventory stock batch not found');
+  }
+
+  await Inventory.findByIdAndDelete(inventoryId);
+
+  // Log Audit
+  await auditService.logAuditEvent({
+    userId,
+    action: 'PHARMACY_STOCK_DELETE',
+    resource: 'Inventory',
+    resourceId: inventoryId,
+    changes: { before: inventory.toObject(), after: null }
+  });
+
+  return { success: true };
+};
+
+/**
+ * Deletes a medicine from catalog with relational check and cascade delete of stock
+ */
+export const deleteMedicine = async (medicineId, userId) => {
+  const medicine = await Medicine.findById(medicineId);
+  if (!medicine) {
+    throw new NotFoundError('Medicine not found in catalog');
+  }
+
+  // Check relational integrity constraints
+  const hasDispensed = await DispenseRecord.findOne({ 'dispensedMedicines.medicineId': medicineId });
+  if (hasDispensed) {
+    throw new ConflictError('Cannot delete medicine: historical dispensing logs reference this medicine');
+  }
+
+  // Cascade delete associated inventory stock batches
+  await Inventory.deleteMany({ medicineId });
+
+  await Medicine.findByIdAndDelete(medicineId);
+
+  // Log Audit
+  await auditService.logAuditEvent({
+    userId,
+    action: 'PHARMACY_MEDICINE_DELETE',
+    resource: 'Medicine',
+    resourceId: medicineId,
+    changes: { before: medicine.toObject(), after: null }
+  });
+
+  return { success: true };
+};
+
 export default {
   registerMedicine,
   addStock,
   getDispensingQueue,
-  dispensePrescription
+  dispensePrescription,
+  deleteMedicine,
+  deleteInventory
 };

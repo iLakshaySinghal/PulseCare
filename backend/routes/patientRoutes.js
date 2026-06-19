@@ -25,13 +25,13 @@ router.post(
 
 router.get(
   '/',
-  authorizeRoles('Hospital Admin', 'Receptionist', 'Doctor', 'Nurse', 'Patient'),
+  authorizeRoles('Hospital Admin', 'Receptionist', 'Doctor', 'Nurse', 'Patient', 'Super Admin', 'Billing Executive'),
   asyncHandler(listPatients)
 );
 
 router.get(
   '/:id',
-  authorizeRoles('Hospital Admin', 'Receptionist', 'Doctor', 'Nurse', 'Patient'),
+  authorizeRoles('Hospital Admin', 'Receptionist', 'Doctor', 'Nurse', 'Patient', 'Super Admin', 'Billing Executive'),
   asyncHandler(getPatientById)
 );
 

@@ -37,6 +37,30 @@ export const fetchInventory = createAsyncThunk(
   }
 );
 
+export const deleteMedicine = createAsyncThunk(
+  'pharmacy/deleteMedicine',
+  async (id, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`/pharmacy/medicines/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error?.message || 'Failed to delete medicine');
+    }
+  }
+);
+
+export const deleteInventory = createAsyncThunk(
+  'pharmacy/deleteInventory',
+  async (id, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`/pharmacy/inventory/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.error?.message || 'Failed to delete stock batch');
+    }
+  }
+);
+
 export const addStock = createAsyncThunk(
   'pharmacy/addStock',
   async (stockData, { rejectWithValue }) => {
@@ -144,6 +168,36 @@ const pharmacySlice = createSlice({
         );
       })
       .addCase(dispensePrescription.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Delete Medicine
+      .addCase(deleteMedicine.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(deleteMedicine.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.medicines = state.medicines.filter((m) => m._id !== action.payload);
+      })
+      .addCase(deleteMedicine.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Delete Inventory Stock Batch
+      .addCase(deleteInventory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(deleteInventory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.inventory = state.inventory.filter((inv) => inv._id !== action.payload);
+      })
+      .addCase(deleteInventory.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

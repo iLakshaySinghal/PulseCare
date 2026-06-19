@@ -131,14 +131,14 @@ export const InvoiceGenerator = () => {
               {selectedPatientId && unbilledItems.length > 0 && (
                 <Box display="flex" flexDirection="column" gap={2}>
                   <TextField
-                    label="Apply Discount ($)"
+                    label="Apply Discount (₹)"
                     type="number"
                     fullWidth
                     value={discount}
                     onChange={(e) => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))}
                   />
                   <TextField
-                    label="Add Tax Charges ($)"
+                    label="Add Tax Charges (₹)"
                     type="number"
                     fullWidth
                     value={tax}
@@ -148,21 +148,21 @@ export const InvoiceGenerator = () => {
                   <Paper p={2} sx={{ p: 2, backgroundColor: 'rgba(99, 102, 241, 0.05)', borderRadius: 2 }}>
                     <Box display="flex" justifyContent="space-between" mb={1}>
                       <Typography variant="body2">Subtotal:</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>${subTotal}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>₹{subTotal}</Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mb={1}>
                       <Typography variant="body2">Tax:</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>${tax}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>₹{tax}</Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mb={1}>
                       <Typography variant="body2">Discount:</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>-${discount}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>-₹{discount}</Typography>
                     </Box>
                     <Divider sx={{ my: 1 }} />
                     <Box display="flex" justifyContent="space-between">
                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Grand Total:</Typography>
                       <Typography variant="subtitle2" color="primary.light" sx={{ fontWeight: 'bold' }}>
-                        ${grandTotal}
+                        ₹{grandTotal}
                       </Typography>
                     </Box>
                   </Paper>
@@ -225,8 +225,8 @@ export const InvoiceGenerator = () => {
                             </TableCell>
                             <TableCell sx={{ fontWeight: 500 }}>{item.name}</TableCell>
                             <TableCell>{item.quantity}</TableCell>
-                            <TableCell>${item.unitPrice}</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>${item.totalPrice}</TableCell>
+                            <TableCell>₹{item.unitPrice}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>₹{item.totalPrice}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

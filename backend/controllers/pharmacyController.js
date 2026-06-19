@@ -121,6 +121,38 @@ export const getDispensedRecords = async (req, res, next) => {
   }
 };
 
+export const deleteMedicine = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    await pharmacyService.deleteMedicine(id, userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Medicine deleted successfully from catalog'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteInventory = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    await pharmacyService.deleteInventory(id, userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Stock batch deleted successfully from inventory'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   registerMedicine,
   listMedicines,
@@ -128,5 +160,7 @@ export default {
   listInventory,
   getDispensingQueue,
   dispensePrescription,
-  getDispensedRecords
+  getDispensedRecords,
+  deleteMedicine,
+  deleteInventory
 };

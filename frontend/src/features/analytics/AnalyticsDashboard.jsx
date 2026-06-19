@@ -78,7 +78,7 @@ export const AnalyticsDashboard = () => {
                     <Box>
                       <Typography color="text.secondary" variant="body2">Total Collected Revenue</Typography>
                       <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                        ${executive.data.totalRevenue?.toLocaleString() || '0'}
+                        ₹{executive.data.totalRevenue?.toLocaleString() || '0'}
                       </Typography>
                     </Box>
                   </CardContent>

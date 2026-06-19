@@ -134,7 +134,7 @@ export const RoomAllocation = () => {
                     <MenuItem value="Private">Private Suite</MenuItem>
                     <MenuItem value="ICU">ICU Critical</MenuItem>
                   </TextField>
-                  <TextField label="Charges Per Day ($)" type="number" fullWidth required value={charges} onChange={(e) => setCharges(e.target.value)} />
+                  <TextField label="Charges Per Day (₹)" type="number" fullWidth required value={charges} onChange={(e) => setCharges(e.target.value)} />
                   <Button type="submit" variant="contained" color="secondary">Add Room Number</Button>
                 </Box>
               </form>
@@ -172,7 +172,7 @@ export const RoomAllocation = () => {
                           <TableCell sx={{ fontWeight: 600 }}>Room {room.roomNumber}</TableCell>
                           <TableCell>{room.wardId?.name} ({room.wardId?.department})</TableCell>
                           <TableCell><Chip label={room.roomType} size="small" variant="outlined" /></TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>${room.chargesPerDay}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>₹{room.chargesPerDay}</TableCell>
                           <TableCell>
                             <Chip label={room.isActive ? 'Active' : 'Inactive'} size="small" color={room.isActive ? 'success' : 'default'} />
                           </TableCell>

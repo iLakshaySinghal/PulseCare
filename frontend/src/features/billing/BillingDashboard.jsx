@@ -76,7 +76,7 @@ export const BillingDashboard = () => {
           <Card>
             <CardContent>
               <Typography color="text.secondary" variant="body2" gutterBottom>Total Invoiced (This Page)</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>${totalInvoiced.toLocaleString()}</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>₹{totalInvoiced.toLocaleString()}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -84,7 +84,7 @@ export const BillingDashboard = () => {
           <Card>
             <CardContent>
               <Typography color="text.secondary" variant="body2" gutterBottom>Total Settled (This Page)</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>${totalPaid.toLocaleString()}</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>₹{totalPaid.toLocaleString()}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -92,7 +92,7 @@ export const BillingDashboard = () => {
           <Card>
             <CardContent>
               <Typography color="text.secondary" variant="body2" gutterBottom>Total Outstanding (This Page)</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>${totalDue.toLocaleString()}</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>₹{totalDue.toLocaleString()}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -176,9 +176,9 @@ export const BillingDashboard = () => {
                           </Typography>
                         </TableCell>
                       )}
-                      <TableCell sx={{ fontWeight: 600 }}>${inv.grandTotal}</TableCell>
-                      <TableCell color="success.main">${inv.amountPaid}</TableCell>
-                      <TableCell color="warning.main">${inv.amountDue}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>₹{inv.grandTotal}</TableCell>
+                      <TableCell color="success.main">₹{inv.amountPaid}</TableCell>
+                      <TableCell color="warning.main">₹{inv.amountDue}</TableCell>
                       <TableCell>
                         <Chip label={inv.status} size="small" color={getStatusColor(inv.status)} />
                       </TableCell>
