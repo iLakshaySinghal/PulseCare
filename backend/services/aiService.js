@@ -1,8 +1,6 @@
 import logger from '../config/logger.js';
 
-// Configuration variables
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+// Configuration variables (dynamically resolved at execution time inside _queryLLM to prevent load-time caching issues)
 
 /**
  * Main AI Service Orchestrator
@@ -14,18 +12,23 @@ class AIService {
    */
   async _queryLLM(prompt, systemInstruction, mockFallbackFn) {
     const startTime = Date.now();
+    const geminiApiKey = process.env.GEMINI_API_KEY || '';
+    const openAiApiKey = process.env.OPENAI_API_KEY || '';
     
     // 1. Try Gemini first if key exists
-    if (GEMINI_API_KEY) {
+    if (geminiApiKey) {
       try {
         logger.info('Querying Gemini API...');
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }],
+              contents: [{ parts: [{ text: prompt }] }],
+              systemInstruction: {
+                parts: [{ text: systemInstruction }]
+              },
               generationConfig: {
                 responseMimeType: 'application/json'
               }
@@ -59,14 +62,14 @@ class AIService {
     }
 
     // 2. Try OpenAI if key exists
-    if (OPENAI_API_KEY) {
+    if (openAiApiKey) {
       try {
         logger.info('Querying OpenAI API...');
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Authorization': `Bearer ${openAiApiKey}`
           },
           body: JSON.stringify({
             model: 'gpt-4o-mini',
