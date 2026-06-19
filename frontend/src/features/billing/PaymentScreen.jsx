@@ -155,8 +155,8 @@ export const PaymentScreen = () => {
                         <TableCell><Chip label={item.source} size="small" variant="outlined" /></TableCell>
                         <TableCell>{item.name}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>${item.unitPrice}</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>${item.totalPrice}</TableCell>
+                        <TableCell>₹{item.unitPrice}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>₹{item.totalPrice}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -168,33 +168,33 @@ export const PaymentScreen = () => {
               <Box display="flex" flexDirection="column" gap={1} width="60%" marginLeft="auto">
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="body2">Subtotal:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>${currentInvoice.subTotal}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>₹{currentInvoice.subTotal}</Typography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="body2">Tax:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>${currentInvoice.tax}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>₹{currentInvoice.tax}</Typography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="body2">Discount:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>-${currentInvoice.discount}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>-₹{currentInvoice.discount}</Typography>
                 </Box>
                 <Divider sx={{ my: 0.5 }} />
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Grand Total:</Typography>
                   <Typography variant="subtitle2" color="primary.light" sx={{ fontWeight: 'bold' }}>
-                    ${currentInvoice.grandTotal}
+                    ₹{currentInvoice.grandTotal}
                   </Typography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mt={1}>
                   <Typography variant="body2" color="success.main" sx={{ fontWeight: 'bold' }}>Amount Paid:</Typography>
                   <Typography variant="body2" color="success.main" sx={{ fontWeight: 'bold' }}>
-                    ${currentInvoice.amountPaid}
+                    ₹{currentInvoice.amountPaid}
                   </Typography>
                 </Box>
                 <Box display="flex" justifyContent="space-between">
                   <Typography variant="body2" color="warning.main" sx={{ fontWeight: 'bold' }}>Amount Due:</Typography>
                   <Typography variant="body2" color="warning.main" sx={{ fontWeight: 'bold' }}>
-                    ${currentInvoice.amountDue}
+                    ₹{currentInvoice.amountDue}
                   </Typography>
                 </Box>
               </Box>
@@ -238,12 +238,12 @@ export const PaymentScreen = () => {
                     />
 
                     <TextField
-                      label="Amount to Pay ($)"
+                      label="Amount to Pay (₹)"
                       type="number"
                       fullWidth
                       value={payAmount}
                       onChange={(e) => setPayAmount(Math.max(1, parseFloat(e.target.value) || 0))}
-                      helperText={`Outstanding due: $${currentInvoice.amountDue}`}
+                      helperText={`Outstanding due: ₹${currentInvoice.amountDue}`}
                     />
 
                     <Button type="submit" variant="contained" color="secondary" fullWidth sx={{ py: 1.2 }}>
@@ -284,13 +284,13 @@ export const PaymentScreen = () => {
                       placeholder="e.g. POL-9872-992"
                     />
                     <TextField
-                      label="Claimed Amount ($)"
+                      label="Claimed Amount (₹)"
                       type="number"
                       fullWidth
                       required
                       value={insAmount}
                       onChange={(e) => setInsAmount(Math.max(1, parseFloat(e.target.value) || 0))}
-                      helperText={`Outstanding due: $${currentInvoice.amountDue}`}
+                      helperText={`Outstanding due: ₹${currentInvoice.amountDue}`}
                     />
                     <Button type="submit" variant="outlined" color="secondary" fullWidth sx={{ py: 1.2 }}>
                       Submit Insurance Pre-Auth
@@ -314,13 +314,13 @@ export const PaymentScreen = () => {
                 <Box mb={2} p={2} component={Paper} variant="outlined">
                   <Typography variant="body2">Provider: <strong>{currentInvoice.insuranceDetails.providerName}</strong></Typography>
                   <Typography variant="body2">Policy No: <strong>{currentInvoice.insuranceDetails.policyNumber}</strong></Typography>
-                  <Typography variant="body2">Claimed: <strong>${currentInvoice.insuranceDetails.claimedAmount}</strong></Typography>
+                  <Typography variant="body2">Claimed: <strong>₹{currentInvoice.insuranceDetails.claimedAmount}</strong></Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     Status: <Chip label={currentInvoice.insuranceDetails.status} size="small" color={currentInvoice.insuranceDetails.status === 'Approved' ? 'success' : 'info'} />
                   </Typography>
                   {currentInvoice.insuranceDetails.status === 'Approved' && (
                     <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
-                      Approved Amount: <strong>${currentInvoice.insuranceDetails.approvedAmount}</strong>
+                      Approved Amount: <strong>₹{currentInvoice.insuranceDetails.approvedAmount}</strong>
                     </Typography>
                   )}
                 </Box>
@@ -342,12 +342,12 @@ export const PaymentScreen = () => {
 
                       {approveStatus === 'Approved' && (
                         <TextField
-                          label="Approved Amount ($)"
+                          label="Approved Amount (₹)"
                           type="number"
                           fullWidth
                           value={approvedVal}
                           onChange={(e) => setApprovedVal(Math.max(0, parseFloat(e.target.value) || 0))}
-                          helperText={`Claimed amount: $${currentInvoice.insuranceDetails.claimedAmount}`}
+                          helperText={`Claimed amount: ₹${currentInvoice.insuranceDetails.claimedAmount}`}
                         />
                       )}
 

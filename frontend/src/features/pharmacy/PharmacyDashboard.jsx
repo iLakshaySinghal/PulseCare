@@ -4,7 +4,7 @@ import {
   Box, Typography, Grid, Paper, Tabs, Tab, Button, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Select, MenuItem, InputLabel,
   FormControl, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Chip, Card, CardContent, Divider
+  TableRow, Chip, Card, CardContent, Divider, Alert
 } from '@mui/material';
 import {
   LocalPharmacy, Add, CheckCircle, Warning, Search, ShoppingCart
@@ -12,13 +12,17 @@ import {
 import {
   fetchMedicines, registerMedicine, fetchInventory, addStock,
   fetchDispensingQueue, dispensePrescription, receiveSocketPrescriptionAlert,
-  receiveSocketPrescriptionDispensed
+  receiveSocketPrescriptionDispensed, deleteMedicine, deleteInventory
 } from './pharmacySlice.js';
 import { getSocket } from '../../utils/socket.js';
 
 export const PharmacyDashboard = () => {
   const dispatch = useDispatch();
   const { medicines, inventory, dispensingQueue, loading } = useSelector((state) => state.pharmacy);
+  const { user } = useSelector((state) => state.auth);
+
+  const isPharmacist = user?.role === 'Pharmacist';
+  const isAdminOrPharmacist = ['Pharmacist', 'Hospital Admin', 'Super Admin'].includes(user?.role);
 
   const [tabValue, setTabValue] = useState(0);
   const [openRegister, setOpenRegister] = useState(false);
@@ -43,6 +47,7 @@ export const PharmacyDashboard = () => {
   // Dispense inputs
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const [dispensedItems, setDispensedItems] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     dispatch(fetchDispensingQueue());
@@ -71,11 +76,18 @@ export const PharmacyDashboard = () => {
       form: medForm,
       strength: medStrength,
       manufacturer: medManufacturer
-    })).then(() => {
-      setOpenRegister(false);
-      setMedName('');
-      setMedGeneric('');
-      dispatch(fetchMedicines());
+    })).then((res) => {
+      if (!res.error) {
+        setOpenRegister(false);
+        setMedName('');
+        setMedGeneric('');
+        setMedStrength('');
+        setMedManufacturer('');
+        setErrorMsg('');
+        dispatch(fetchMedicines());
+      } else {
+        setErrorMsg(res.payload || 'Failed to register medicine');
+      }
     });
   };
 
@@ -87,26 +99,38 @@ export const PharmacyDashboard = () => {
       supplier,
       batchNumber,
       unitPrice: parseFloat(unitPrice)
-    })).then(() => {
-      setOpenAddStock(false);
-      setSelectedMed('');
-      setStockQty('');
-      setBatchNumber('');
-      dispatch(fetchInventory());
+    })).then((res) => {
+      if (!res.error) {
+        setOpenAddStock(false);
+        setSelectedMed('');
+        setStockQty('');
+        setBatchNumber('');
+        setSupplier('');
+        setUnitPrice('');
+        setExpiryDate('');
+        setErrorMsg('');
+        dispatch(fetchInventory());
+      } else {
+        setErrorMsg(res.payload || 'Failed to add stock batch');
+      }
     });
   };
 
   const handleOpenDispense = (prescription) => {
     setSelectedPrescription(prescription);
+    setErrorMsg('');
     // Auto-match prescriptions to inventory where possible
     const items = prescription.prescriptions.map(p => {
       // Find matching medicine ID in medicines master list
       const matched = medicines.find(m => m.name.toLowerCase().includes(p.drugName.toLowerCase()));
+      // Find available batches in inventory for this medicine
+      const matchedInventory = matched ? inventory.filter(inv => inv.medicineId?._id === matched._id) : [];
+      const defaultBatch = matchedInventory[0]?.batchNumber || '';
       return {
         drugName: p.drugName,
         medicineId: matched ? matched._id : '',
         quantity: 10, // Default dispatch quantity
-        batchNumber: 'B1' // Default batch fallback
+        batchNumber: defaultBatch
       };
     });
     setDispensedItems(items);
@@ -126,10 +150,75 @@ export const PharmacyDashboard = () => {
     })).then((res) => {
       if (!res.error) {
         setOpenDispense(false);
+        setErrorMsg('');
         dispatch(fetchDispensingQueue());
         dispatch(fetchInventory());
+      } else {
+        setErrorMsg(res.payload || 'Failed to dispense prescription');
       }
     });
+  };
+
+  const handleDeleteMedicine = (id) => {
+    if (window.confirm('Are you sure you want to delete this medicine from the catalog? This will also cascade delete all its associated stock batches.')) {
+      dispatch(deleteMedicine(id)).then((res) => {
+        if (!res.error) {
+          dispatch(fetchMedicines());
+          dispatch(fetchInventory());
+        }
+      });
+    }
+  };
+
+  const handleDeleteInventory = (id) => {
+    if (window.confirm('Are you sure you want to delete this stock batch from the inventory?')) {
+      dispatch(deleteInventory(id)).then((res) => {
+        if (!res.error) {
+          dispatch(fetchInventory());
+        }
+      });
+    }
+  };
+
+  const getLedgerItems = () => {
+    const items = [];
+    
+    // 1. Add all active inventory batches
+    inventory.forEach(inv => {
+      items.push({
+        _id: inv._id,
+        isBatch: true,
+        medicineName: inv.medicineId?.name,
+        genericName: inv.medicineId?.genericName,
+        batchNumber: inv.batchNumber,
+        stock: inv.stock,
+        expiryDate: inv.expiryDate,
+        unitPrice: inv.unitPrice,
+        reorderLevel: inv.reorderLevel,
+        medicineId: inv.medicineId?._id
+      });
+    });
+
+    // 2. Find medicines that do not have any inventory batches
+    medicines.forEach(med => {
+      const hasBatch = inventory.some(inv => inv.medicineId?._id === med._id);
+      if (!hasBatch) {
+        items.push({
+          _id: med._id,
+          isBatch: false,
+          medicineName: med.name,
+          genericName: med.genericName,
+          batchNumber: 'No Batches Created',
+          stock: 0,
+          expiryDate: null,
+          unitPrice: 0,
+          reorderLevel: 0,
+          medicineId: med._id
+        });
+      }
+    });
+
+    return items;
   };
 
   return (
@@ -139,12 +228,16 @@ export const PharmacyDashboard = () => {
           Pharmacy Dashboard
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" startIcon={<Add />} onClick={() => setOpenRegister(true)}>
-            Register Medicine
-          </Button>
-          <Button variant="contained" startIcon={<Add />} onClick={() => setOpenAddStock(true)} sx={{ background: 'linear-gradient(90deg, #6366f1 0%, #4f46e5 100%)' }}>
-            Add Stock Batch
-          </Button>
+          {isAdminOrPharmacist && (
+            <Button variant="outlined" startIcon={<Add />} onClick={() => { setErrorMsg(''); setOpenRegister(true); }}>
+              Register Medicine
+            </Button>
+          )}
+          {isPharmacist && (
+            <Button variant="contained" startIcon={<Add />} onClick={() => { setErrorMsg(''); setOpenAddStock(true); }} sx={{ background: 'linear-gradient(90deg, #6366f1 0%, #4f46e5 100%)' }}>
+              Add Stock Batch
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -193,9 +286,13 @@ export const PharmacyDashboard = () => {
                       </TableCell>
                       <TableCell>{new Date(presc.encounterDate).toLocaleDateString()}</TableCell>
                       <TableCell align="right">
-                        <Button variant="contained" size="small" sx={{ backgroundColor: '#10b981' }} onClick={() => handleOpenDispense(presc)}>
-                          Verify & Dispense
-                        </Button>
+                        {isPharmacist ? (
+                          <Button variant="contained" size="small" sx={{ backgroundColor: '#10b981' }} onClick={() => handleOpenDispense(presc)}>
+                            Verify & Dispense
+                          </Button>
+                        ) : (
+                          <Chip label="Pharmacist Only" size="small" variant="outlined" sx={{ color: 'text.secondary', borderColor: 'rgba(255,255,255,0.12)' }} />
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -225,30 +322,55 @@ export const PharmacyDashboard = () => {
                     <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Expiry Date</TableCell>
                     <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Unit Price</TableCell>
                     <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Alerts</TableCell>
+                    <TableCell sx={{ color: '#ffffff', fontWeight: 600 }} align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {inventory.map((inv) => {
-                    const isLowStock = inv.stock <= (inv.reorderLevel || 10);
-                    const isNearExpiry = new Date(inv.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+                  {getLedgerItems().map((item) => {
+                    const isLowStock = item.isBatch && item.stock <= (item.reorderLevel || 10);
+                    const isNearExpiry = item.isBatch && new Date(item.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    const isOutOfStock = !item.isBatch;
+
                     return (
-                      <TableRow key={inv._id}>
-                        <TableCell sx={{ fontWeight: 600 }}>{inv.medicineId?.name}</TableCell>
-                        <TableCell>{inv.medicineId?.genericName}</TableCell>
-                        <TableCell>{inv.batchNumber}</TableCell>
-                        <TableCell>{inv.stock}</TableCell>
-                        <TableCell>{new Date(inv.expiryDate).toLocaleDateString()}</TableCell>
-                        <TableCell>${inv.unitPrice}</TableCell>
+                      <TableRow key={item._id}>
+                        <TableCell sx={{ fontWeight: 600 }}>{item.medicineName}</TableCell>
+                        <TableCell>{item.genericName}</TableCell>
+                        <TableCell sx={{ color: isOutOfStock ? 'text.secondary' : 'inherit', fontStyle: isOutOfStock ? 'italic' : 'normal' }}>
+                          {item.batchNumber}
+                        </TableCell>
+                        <TableCell>{item.stock}</TableCell>
                         <TableCell>
+                          {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.isBatch ? `₹${item.unitPrice}` : '—'}
+                        </TableCell>
+                        <TableCell>
+                          {isOutOfStock && <Chip icon={<Warning />} label="No Stock" color="error" size="small" />}
                           {isLowStock && <Chip icon={<Warning />} label="Low Stock" color="warning" size="small" sx={{ mr: 0.5 }} />}
                           {isNearExpiry && <Chip icon={<Warning />} label="Expiring Soon" color="error" size="small" />}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                            {item.isBatch && isAdminOrPharmacist && (
+                              <Button variant="outlined" color="warning" size="small" onClick={() => handleDeleteInventory(item._id)}>
+                                Delete Batch
+                              </Button>
+                            )}
+                            {isAdminOrPharmacist && (
+                              <Button variant="outlined" color="error" size="small" onClick={() => handleDeleteMedicine(item.medicineId)}>
+                                Delete Medicine
+                              </Button>
+                            )}
+                            {!isAdminOrPharmacist && '—'}
+                          </Box>
                         </TableCell>
                       </TableRow>
                     );
                   })}
-                  {inventory.length === 0 && (
+                  {getLedgerItems().length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={8} align="center">
                         <Typography color="text.secondary">No stock inventory logs recorded.</Typography>
                       </TableCell>
                     </TableRow>
@@ -265,6 +387,7 @@ export const PharmacyDashboard = () => {
         <DialogTitle>Register Medicine in Catalog</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1.5 }}>
+            {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
             <TextField label="Brand Name" fullWidth value={medName} onChange={(e) => setMedName(e.target.value)} />
             <TextField label="Generic Formula" fullWidth value={medGeneric} onChange={(e) => setMedGeneric(e.target.value)} />
             <FormControl fullWidth>
@@ -290,6 +413,7 @@ export const PharmacyDashboard = () => {
         <DialogTitle>Add Batch Stock to Inventory</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1.5 }}>
+            {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
             <FormControl fullWidth>
               <InputLabel>Medicine Brand</InputLabel>
               <Select value={selectedMed} onChange={(e) => setSelectedMed(e.target.value)} label="Medicine Brand">
@@ -302,7 +426,7 @@ export const PharmacyDashboard = () => {
             <TextField label="Stock Quantity" type="number" fullWidth value={stockQty} onChange={(e) => setStockQty(e.target.value)} />
             <TextField label="Expiry Date" type="date" InputLabelProps={{ shrink: true }} fullWidth value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
             <TextField label="Supplier Name" fullWidth value={supplier} onChange={(e) => setSupplier(e.target.value)} />
-            <TextField label="Unit Price ($)" type="number" fullWidth value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
+            <TextField label="Unit Price (₹)" type="number" fullWidth value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
           </Box>
         </DialogContent>
         <DialogActions>
@@ -316,6 +440,7 @@ export const PharmacyDashboard = () => {
         <DialogTitle>Verify & Dispense Prescription</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1.5 }}>
+            {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
             <Typography variant="subtitle2" color="primary">Dispensing details for: {selectedPrescription?.patientId?.firstName} {selectedPrescription?.patientId?.lastName}</Typography>
             <Divider />
             {dispensedItems.map((item, idx) => (
@@ -335,8 +460,16 @@ export const PharmacyDashboard = () => {
                       }}
                       label="Batch Number"
                     >
-                      <MenuItem value="B1">Batch B1 (default)</MenuItem>
-                      <MenuItem value="B2">Batch B2</MenuItem>
+                      {inventory
+                        .filter(inv => inv.medicineId?._id === item.medicineId)
+                        .map(inv => (
+                          <MenuItem key={inv._id} value={inv.batchNumber}>
+                            {inv.batchNumber} (Stock: {inv.stock})
+                          </MenuItem>
+                        ))}
+                      {inventory.filter(inv => inv.medicineId?._id === item.medicineId).length === 0 && (
+                        <MenuItem value="">No active batches</MenuItem>
+                      )}
                     </Select>
                   </FormControl>
                 </Grid>

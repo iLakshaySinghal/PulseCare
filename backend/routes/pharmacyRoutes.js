@@ -6,7 +6,9 @@ import {
   listInventory,
   getDispensingQueue,
   dispensePrescription,
-  getDispensedRecords
+  getDispensedRecords,
+  deleteMedicine,
+  deleteInventory
 } from '../controllers/pharmacyController.js';
 import { authenticateJWT } from '../middlewares/authenticateJWT.js';
 import { authorizeRoles } from '../middlewares/authorizeRoles.js';
@@ -50,7 +52,7 @@ router.get(
 
 router.get(
   '/dispense-queue',
-  authorizeRoles('Pharmacist'),
+  authorizeRoles('Doctor', 'Nurse', 'Pharmacist', 'Hospital Admin', 'Super Admin'),
   asyncHandler(getDispensingQueue)
 );
 
@@ -65,6 +67,18 @@ router.get(
   '/dispense-records',
   authorizeRoles('Pharmacist', 'Hospital Admin', 'Super Admin'),
   asyncHandler(getDispensedRecords)
+);
+
+router.delete(
+  '/medicines/:id',
+  authorizeRoles('Pharmacist', 'Hospital Admin', 'Super Admin'),
+  asyncHandler(deleteMedicine)
+);
+
+router.delete(
+  '/inventory/:id',
+  authorizeRoles('Pharmacist', 'Hospital Admin', 'Super Admin'),
+  asyncHandler(deleteInventory)
 );
 
 export default router;
